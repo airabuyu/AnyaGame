@@ -1,0 +1,279 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Valentine Game</title>
+    <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet">
+    <style>
+        .screen p {
+            position: relative;
+            z-index: 2;
+        }
+        body {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            background-color: #f8f1e9;
+        }
+
+        .gameboy {
+            width: 300px;
+            height: 450px;
+            background-color: #dcdcdc;
+            padding: 20px;
+            border-radius: 20px;
+            text-align: center;
+            box-shadow: 5px 5px 10px #aaa;
+            position: relative;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .screen {
+            width: 100%;
+            height: 200px;
+            background-color: #90ee90;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            font-family: Arial, sans-serif;
+            font-size: 14px;
+            border-radius: 10px;
+            color: black;
+            position: relative;
+            margin-bottom: 20px;
+            overflow: hidden;
+        }
+
+        .character {
+            width: 50px;
+            height: 50px;
+            position: absolute;
+            top: 80px;
+            left: 130px; 
+            transform: translate(-50%, -50%);
+        }
+
+        .character img {
+            width: 100%;
+            height: 100%;
+        }
+
+        .option {
+            position: absolute;
+            font-size: 16px;
+            font-weight: bold;
+        }
+
+        #yes {
+            left: 50px;
+            top: 150px;
+            color: green;
+        }
+
+        #no {
+            right: 50px;
+            top: 150px;
+            color: red;
+        }
+
+        .controller {
+            display: flex;
+            justify-content: space-between;
+            width: 100%;
+            align-items: center;
+            margin-top: 20px;
+        }
+
+        .dpad {
+            position: relative;
+            width: 80px;
+            height: 80px;
+        }
+
+        .dpad button {
+            position: absolute;
+            width: 30px;
+            height: 30px;
+            background-color: #444;
+            border: none;
+            color: white;
+            font-weight: bold;
+            cursor: pointer;
+            border-radius: 5px;
+        }
+
+        .dpad .up { top: 0; left: 25px; }
+        .dpad .down { bottom: 0; left: 25px; }
+        .dpad .left { left: 0; top: 25px; }
+        .dpad .right { right: 0; top: 25px; }
+
+        .dpad .center {
+            width: 30px;
+            height: 30px;
+            background-color: #222;
+            left: 25px;
+            top: 25px;
+            position: absolute;
+            border-radius: 5px;
+            pointer-events: none;
+        }
+
+        /* A and B buttons */
+        .a-b-buttons {
+            position: relative;
+            width: 100px;
+            height: 100px;
+        }
+
+        .button {
+            width: 50px;
+            height: 50px;
+            background-color: red;
+            border-radius: 50%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            color: white;
+            font-weight: bold;
+            cursor: pointer;
+            position: absolute;
+        }
+
+        .button.b { top: 50px; left: 2px; } 
+        .button.a { bottom: 10; right: 2px; } 
+        * {
+            font-family: 'Press Start 2P', cursive;
+            font-size: 16px;
+            letter-spacing: 1px;
+        }
+    </style>
+</head>
+<body>
+
+<div class="gameboy">
+    <div class="screen">
+        <p>Will you be my Valentine?</p>
+        <div class="character">
+            <img id="character" src="download.png" alt="Character">
+        </div>
+        <div class="option" id="yes">YES</div>
+        <div class="option" id="no">NO</div>
+    </div>
+
+    <div class="controller">
+        <!-- D-Pad -->
+        <div class="dpad">
+            <button class="up" onclick="moveCharacter('up')">▲</button>
+            <button class="down" onclick="moveCharacter('down')">▼</button>
+            <button class="left" onclick="moveCharacter('left')">◄</button>
+            <button class="right" onclick="moveCharacter('right')">►</button>
+            <div class="center"></div>
+        </div>
+
+        <!-- A and B Buttons -->
+        <div class="a-b-buttons">
+            <div class="button b">B</div>
+            <div class="button a" onclick="selectOption()">A</div>
+        </div>
+    </div>
+</div>
+
+<audio id="bg-music" loop>
+    <source src="sxf.mp3" type="audio/mp3">
+    Your browser does not support the audio element.
+</audio>
+
+<script>
+window.onload = function() {
+    const music = document.getElementById("bg-music");
+
+    const tryPlayingMusic = () => {
+        try {
+            music.play().then(() => {
+                console.log("Music started!");
+            }).catch((e) => {
+                console.log("Music play failed:", e);
+            });
+        } catch (e) {
+            console.log("Music blocked by browser: ", e);
+        }
+    };
+
+    tryPlayingMusic();
+
+    if (music.paused) {
+        const playMessage = document.createElement("div");
+        playMessage.style.position = "absolute";
+        playMessage.style.top = "50%";
+        playMessage.style.left = "50%";
+        playMessage.style.transform = "translate(-50%, -50%)";
+        playMessage.style.color = "black";
+        playMessage.style.fontSize = "18px";
+        playMessage.style.fontFamily = "'Press Start 2P', cursive";
+        playMessage.style.zIndex = "9999";
+        playMessage.style.textAlign = "center"; // Center text
+        document.body.appendChild(playMessage);
+
+        document.body.addEventListener("click", function() {
+            music.play().then(() => {
+                playMessage.remove();
+                console.log("Music started after user click!");
+            }).catch((e) => {
+                console.log("Failed to start music after click:", e);
+            });
+        });
+    }
+};
+
+
+    let character = document.querySelector(".character"); 
+    let noOption = document.getElementById("no");
+    let yesOption = document.getElementById("yes");
+
+    let charX = 130, charY = 80;
+    const step = 10; 
+
+    function moveCharacter(direction) {
+        const screen = document.querySelector(".screen").getBoundingClientRect();
+        const char = character.getBoundingClientRect();
+
+        if (direction === "left" && char.left > screen.left + 10) charX -= step;
+        if (direction === "right" && char.right < screen.right - 10) charX += step;
+        if (direction === "up" && char.top > screen.top + 10) charY -= step;
+        if (direction === "down" && char.bottom < screen.bottom - 10) charY += step;
+
+        // Move the character
+        character.style.left = charX + "px";
+        character.style.top = charY + "px";
+    }
+
+    function selectOption() {
+        let yesRect = yesOption.getBoundingClientRect();
+        let noRect = noOption.getBoundingClientRect();
+        let charRect = character.getBoundingClientRect();
+
+        if (Math.abs(yesRect.left - charRect.left) < 40 && Math.abs(yesRect.top - charRect.top) < 40) {
+            alert("YAY! Happy Valentine's Day! ❤️");
+        }
+
+        if (Math.abs(noRect.left - charRect.left) < 40 && Math.abs(noRect.top - charRect.top) < 40) {
+            alert("Oops, try again!");
+        }
+    }
+
+    document.addEventListener("keydown", function(event) {
+        if (event.key === "ArrowLeft" || event.key === "a") moveCharacter("left");
+        if (event.key === "ArrowRight" || event.key === "d") moveCharacter("right");
+        if (event.key === "ArrowUp" || event.key === "w") moveCharacter("up");
+        if (event.key === "ArrowDown" || event.key === "s") moveCharacter("down");
+        if (event.key === "Enter") selectOption();
+    });
+</script>
+
+</body>
+</html>
